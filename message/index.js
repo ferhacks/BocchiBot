@@ -50,7 +50,6 @@ const emojiUnicode = require('emoji-unicode')
 const moment = require('moment-timezone')
 const translate = require('@vitalets/google-translate-api')
 moment.tz.setDefault('Asia/Jakarta').locale('id')
-const genshin = require('genshin-impact-api')
 const google = require('google-it')
 const cron = require('node-cron')
 /********** END OF MODULES **********/
@@ -876,23 +875,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                         await bocchi.reply(from, 'Error!', id)
                     })
             break
-            case 'genshininfo': // chika chantexxzz
-            case 'genshin':
-                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
-                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
-                if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
-                limit.addLimit(sender.id, _limit, isPremium, isOwner)
-                await bocchi.reply(from, ind.wait(), id)
-                try {
-                    console.log('Searching for character...')
-                    const character = await genshin.characters(q)
-                    await bocchi.sendFileFromUrl(from, character.image, `${character.title}.jpg`, `*「 GENSHIN IMPACT 」*\n\n*${character.title}*\n${character.description}\n➸ *Name*: ${character.name}\n➸ *Nation*: ${character.nation}\n➸ *Gender*: ${character.gender}\n➸ *Birthday*: ${character.birthday}\n➸ *Constellation*: ${character.constellation}\n➸ *Rarity*: ${character.rarity}\n➸ *Vision*: ${character.vision}\n➸ *Weapon*: ${character.weapon}\n\n${character.url}`)
-                    console.log('Success sending Genshin Impact character!')
-                } catch (err) {
-                    console.error(err)
-                    await bocchi.reply(from, 'Error or character not found!', id)
-                }
-            break
+
             case 'jadwaltv': // Chika chantexxzz
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (ar.length !== 1) return await bocchi.reply(from, ind.wrongFormat(), id)
