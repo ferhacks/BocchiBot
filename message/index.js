@@ -3117,34 +3117,49 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 }
             break
             case 'sticker':
-            case 'stiker':
-                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
-                if (isMedia && isImage || isQuotedImage) {
-                    await bocchi.reply(from, ind.wait(), id)
-                    const encryptMedia = isQuotedImage ? quotedMsg : message
-                    const mediaData = await decryptMedia(encryptMedia, uaOverride)
-                    webp.buffer2webpbuffer(mediaData, 'jpg', '-q 100')
-                        .then((res) => {
-                            sharp(res)
-                                .resize(512, 512)
-                                .toFile(`./temp/stage_${sender.id}.webp`, async (err) => {
-                                    if (err) return console.error(err)
-                                    await exec(`webpmux -set exif ./temp/data.exif ./temp/stage_${sender.id}.webp -o ./temp/${sender.id}.webp`, { log: true })
-                                    if (fs.existsSync(`./temp/${sender.id}.webp`)) {
-                                        const data = fs.readFileSync(`./temp/${sender.id}.webp`)
-                                        const base64 = `data:image/webp;base64,${data.toString('base64')}`
-                                        await bocchi.sendRawWebpAsSticker(from, base64)
-                                        await bocchi.reply(from, ind.ok(), id)
-                                        console.log(`Sticker processed for ${processTime(t, moment())} seconds`)
-                                        fs.unlinkSync(`./temp/${sender.id}.webp`)
-                                        fs.unlinkSync(`./temp/stage_${sender.id}.webp`)
-                                    }
-                                })
+                case 'fig':
+                case 'figurinha':
+                case 'stiker':
+            case 's':
+                if (isMedia && isImage) {
+                        const mediaData = await decryptMedia(message, uaOverride)
+                        sharp(mediaData)
+                        .resize(512, 512, {
+                            fit: sharp.fit.contain
                         })
-                } else {
-                    await bocchi.reply(from, ind.wrongFormat(), id)
-                }
-            break
+                        .toBuffer()
+                        .then(async (resizedImageBuffer) => {
+                            let resizedImageData = resizedImageBuffer.toString('base64');
+                            let resizedBase64 = `data:${mimetype};base64,${resizedImageData}`;
+                            await bocchi.sendImageAsSticker(from, resizedBase64)
+                            await bocchi.reply(from, '*SU STICKER SE CREO CORRECTAMENTE😉', id)
+                        })
+                    } else if (isQuotedImage) {
+                        const mediaData = await decryptMedia(quotedMsg, uaOverride)
+                        sharp(mediaData)
+                        .resize(512, 512, {
+                            fit: sharp.fit.contain
+                        })
+                        .toBuffer()
+                        .then(async (resizedImageBuffer) => {
+                            let resizedImageData = resizedImageBuffer.toString('base64');
+                            let resizedBase64 = `data:${quotedMsg.mimetype};base64,${resizedImageData}`;
+                            await bocchi.sendImageAsSticker(from, resizedBase64)
+                            await bocchi.reply(from, '*SU STICKER SE CREO CORRECTAMENTE😉', id)
+        
+                        })
+                    } else if (args.length == 1) {
+                        const url = args[0]
+                        if (isUrl(url)) {
+                            await kill.sendStickerfromUrl(from, url, { method: 'get' })
+                                .catch(err => console.log('Erro: ', err))
+                        } else {
+                            kill.reply(from, 'Uh, Este enlace no funciona', id)
+                        }
+                    } else {
+                        kill.reply(from, 'Lo Acabas de usar mal, \nPara usar esto, envíe o etiquete una foto con este mensaje, si es un gif, use el comando */stickergif*', id)
+                    }
+                    break
             case 'stickerp':
             case 'stikerp':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
